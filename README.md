@@ -28,12 +28,12 @@ Download study data from Nesstar
 		-Dnesstar.output="data/"
 		-Dnesstar.study="MMA0000"
 
-### Logging
+### Debug logging
 
-Add these properties to get wire header logging (may create a lot of output):
+Add
 
-	-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
-	-Dorg.apache.commons.logging.simplelog.log.org.apache.commons.httpclient=debug \
-	-Dorg.apache.commons.logging.simplelog.log.httpclient.wire.header=debug \
-	-Dorg.apache.commons.logging.simplelog.showdatetime=true \
+		-Dnesstar.debug=true
+
+
+
 

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.rmi.ServerException;
 import java.text.SimpleDateFormat;
@@ -35,8 +36,7 @@ public final class NesstarStudyDownloader {
     private final Server server;
     private final String outputPath;
     private final Gson gson = new GsonBuilder().serializeNulls().create();
-    private final SimpleDateFormat dateFormat =
-        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
     public NesstarStudyDownloader(final URI serverURI, final String username, final String password,
                                   final String outPath) throws IOException {
@@ -44,46 +44,49 @@ public final class NesstarStudyDownloader {
         nesstarDB = NesstarDBFactory.getInstance();
         server = nesstarDB.getServer(serverURI);
 
+        if (!Files.notExists(Paths.get(outPath))) {
+            throw new IllegalArgumentException(String.format("nesstar.output=%s must be a valid directory", outPath));
+        }
+
         if (username != null && password != null) {
             System.out.println(String.format("Logging in as %s", username));
             server.login(username, password);
         }
     }
 
-    public void downloadAllStudies()
-        throws NotAuthorizedException, IOException, InterruptedException {
+    public void downloadAllStudies() throws NotAuthorizedException, IOException, InterruptedException {
         System.out.println("Fetching list of studies...");
 
         final List<Study> studies = server.getBank(Study.class).getAll();
 
         for (final Study study : studies) {
             if (alreadyDownloaded(study)) {
-                System.out.println(
-                    String.format("Already downloaded: %s - %s", study.getId(), study.getLabel()));
+                System.out.println(String.format("Already downloaded: %s - %s", study.getId(), study.getLabel()));
             } else {
                 downloadStudy(study);
             }
         }
     }
 
-    public void downloadStudyFor(final String key)
-        throws NotAuthorizedException, IOException, InterruptedException {
+    public void downloadStudyFor(final String key) throws NotAuthorizedException, IOException, InterruptedException {
         final Study study = server.getBank(Study.class).get(key);
+
+        if (study == null) {
+            throw new IllegalArgumentException("study key not found: " + key);
+        }
+
         downloadStudy(study);
     }
 
-    private boolean alreadyDownloaded(final Study study)
-        throws NotAuthorizedException, IOException {
+    private boolean alreadyDownloaded(final Study study) throws NotAuthorizedException, IOException {
         final File metaFile = new File(getMetaPath(study));
         final File dataFile = new File(getDataPath(study));
 
         final Date lastModified = study.getTimeStamp();
 
-        final boolean hasData =
-            dataFile.exists() && new Date(dataFile.lastModified()).compareTo(lastModified) > 0;
+        final boolean hasData = dataFile.exists() && new Date(dataFile.lastModified()).compareTo(lastModified) > 0;
 
-        final boolean hasMeta =
-            metaFile.exists() && new Date(metaFile.lastModified()).compareTo(lastModified) > 0;
+        final boolean hasMeta = metaFile.exists() && new Date(metaFile.lastModified()).compareTo(lastModified) > 0;
 
         return hasData && hasMeta;
     }
@@ -96,8 +99,7 @@ public final class NesstarStudyDownloader {
         return String.format(META_PATH, outputPath, study.getId());
     }
 
-    private void downloadStudy(final Study study)
-        throws IOException, NotAuthorizedException, InterruptedException {
+    private void downloadStudy(final Study study) throws IOException, NotAuthorizedException, InterruptedException {
         System.out.println(String.format("Downloading: %s - %s", study.getId(), study.getLabel()));
 
         try {
@@ -126,8 +128,7 @@ public final class NesstarStudyDownloader {
         Files.copy(spssStream, new File(dataPath).toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private void writeMetadata(final Study study)
-        throws IOException, JsonIOException, NotAuthorizedException {
+    private void writeMetadata(final Study study) throws IOException, JsonIOException, NotAuthorizedException {
         final String metaPath = getMetaPath(study);
 
         final FileWriter fileWriter = new FileWriter(metaPath);
@@ -180,13 +181,21 @@ public final class NesstarStudyDownloader {
         final String username = System.getProperty("nesstar.username");
         final String password = System.getProperty("nesstar.password");
         final String outputPath = System.getProperty("nesstar.output");
+        final boolean debug = "true".equals(System.getProperty("nesstar.debug"));
+
+        if (debug) {
+            System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
+            System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
+            System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire.header", "debug");
+            System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
+        }
 
         if (server == null) {
             throw new IllegalArgumentException("must set -Dnesstar.server");
         }
 
-        final NesstarStudyDownloader downloader = new NesstarStudyDownloader(
-            new URI(server), username, password, outputPath == null ? "data/" : outputPath);
+        final NesstarStudyDownloader downloader =
+            new NesstarStudyDownloader(new URI(server), username, password, outputPath == null ? "data/" : outputPath);
 
         if (studyKey == null) {
             downloader.downloadAllStudies();
