@@ -50,7 +50,9 @@ public final class NesstarStudyDownloader {
 
         if (username != null && password != null) {
             System.out.println(String.format("Logging in as %s", username));
-            server.login(username, password);
+            if (!server.login(username, password)) {
+                throw new RuntimeException("unable to login as " + username);
+            }
         }
     }
 
