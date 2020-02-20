@@ -45,6 +45,7 @@ public final class NesstarStudyDownloader {
         server = nesstarDB.getServer(serverURI);
 
         if (username != null && password != null) {
+            System.out.println(String.format("Logging in as %s", username));
             server.login(username, password);
         }
     }
@@ -73,8 +74,8 @@ public final class NesstarStudyDownloader {
 
     private boolean alreadyDownloaded(final Study study)
         throws NotAuthorizedException, IOException {
-        final File metaFile = new File(String.format(META_PATH, outputPath, study.getId()));
-        final File dataFile = new File(String.format(DATA_PATH, outputPath, study.getId()));
+        final File metaFile = new File(getMetaPath(study));
+        final File dataFile = new File(getDataPath(study));
 
         final Date lastModified = study.getTimeStamp();
 
@@ -85,6 +86,14 @@ public final class NesstarStudyDownloader {
             metaFile.exists() && new Date(metaFile.lastModified()).compareTo(lastModified) > 0;
 
         return hasData && hasMeta;
+    }
+
+    private String getDataPath(final Study study) {
+        return String.format(DATA_PATH, outputPath, study.getId());
+    }
+
+    private String getMetaPath(final Study study) {
+        return String.format(META_PATH, outputPath, study.getId());
     }
 
     private void downloadStudy(final Study study)
@@ -111,14 +120,15 @@ public final class NesstarStudyDownloader {
     }
 
     private void writeData(final Study study) throws IOException, NotAuthorizedException {
-        final String dataPath = String.format(DATA_PATH, outputPath, study.getId());
+        final String dataPath = getDataPath(study);
+
         final ResultStream spssStream = study.download(FileFormat.CSV, null);
         Files.copy(spssStream, new File(dataPath).toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     private void writeMetadata(final Study study)
         throws IOException, JsonIOException, NotAuthorizedException {
-        final String metaPath = String.format(META_PATH, outputPath, study.getId());
+        final String metaPath = getMetaPath(study);
 
         final FileWriter fileWriter = new FileWriter(metaPath);
 

@@ -5,7 +5,7 @@ Download study data from Nesstar
 ### Setup
 
 	mvn install
-	mkdir -p data/mma
+	mkdir -p data
 
 ### Fetch all studies from a server
 
@@ -14,7 +14,8 @@ Download study data from Nesstar
 		-Dexec.cleanupDaemonThreads=false \
 		-Dnesstar.server="http://mma.nsd.uib.no" \
 		-Dnesstar.username="john.doe" \
-		-Dnesstar.password="s3cret"
+		-Dnesstar.password="s3cret" \
+		-Dnesstar.output="data/"
 
 ### Fetch a specific study
 
@@ -24,6 +25,7 @@ Download study data from Nesstar
 		-Dnesstar.server="http://mma.nsd.uib.no" \
 		-Dnesstar.username="john.doe" \
 		-Dnesstar.password="s3cret" \
+		-Dnesstar.output="data/"
 		-Dnesstar.study="MMA0000"
 
 ### Logging
