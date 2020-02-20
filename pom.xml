@@ -1,0 +1,37 @@
+<project xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0
+   http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/200/XMLSchema-instance">
+   <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+   </properties>
+   <repositories>
+      <repository>
+         <id>Nesstar</id>
+         <name>Nesstar Maven Repository</name>
+         <url>http://nesstar-dev.nsd.uib.no/nexus/content/groups/public/</url>
+      </repository>
+   </repositories>
+   <modelVersion>4.0.0</modelVersion>
+   <packaging>jar</packaging>
+   <groupId>no.jaribakken.nesstar</groupId>
+   <artifactId>nesstar-study-downloader</artifactId>
+   <version>1.0-SNAPSHOT</version>
+   <dependencies>
+      <dependency>
+         <groupId>com.nesstar</groupId>
+         <artifactId>nesstar-api</artifactId>
+         <version>0.7</version>
+      </dependency>
+      <dependency>
+         <groupId>com.google.code.gson</groupId>
+         <artifactId>gson</artifactId>
+         <version>2.8.6</version>
+      </dependency>
+      <dependency>
+         <groupId>com.google.guava</groupId>
+         <artifactId>guava</artifactId>
+         <version>28.2-jre</version>
+      </dependency>
+   </dependencies>
+</project>
